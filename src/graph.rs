@@ -6,8 +6,9 @@ pub struct Graph {
 }
 
 impl Graph {
-    pub fn add_node(&mut self, node: Box<Node>) {
+    pub fn add_node(&mut self, node: Box<Node>) -> &Box<Node> {
         self.nodes.push(node);
+        self.nodes.last().unwrap()
     }
 }
 
