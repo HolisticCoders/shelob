@@ -12,7 +12,7 @@ fn create_graph() {
 #[test]
 fn add_node() {
     let mut graph = Graph::new();
-    let node = Box::new(AddNode::new());
-    graph.add_node(node);
-    assert_eq!(graph.nodes().len(), 1)
+    let node = graph.add_node(Box::new(AddNode::new()));
+    node.evaluate();
+    assert_eq!(graph.nodes().len(), 1);
 }
