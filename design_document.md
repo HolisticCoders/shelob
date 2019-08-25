@@ -4,20 +4,12 @@
 
 Dependencies: None
 Crate Type: Library
-Description: This is the heart of shelob. A dependency graph that evaluates really fast.
+Description: This does nothing but exposing an API to create graph types, node types and attribute types.
 There might be multiple types of graphs (which might even deserve their own libraries):
 
-1. push/pull evaluation: for graphs that don't have one clear entry point.
+### Graphs
 
-   Pick a node in the graph that we want to evaluate, recursively walk the graph and tag the nodes that need re-evaluating (Dirty propagation).
-   Then evaluate the dirty nodes that don't have dirty nodes connected in their inputs. repeat until all the dirty nodes are evaluated up until the node that was picked in the first place.
-
-2. Forward execution: Graphs that do have an entry point. similar to Unreal's blueprint. These let you control the flow of execution explicitly
-
-3. Something else?
-
-Shelob Core should expose the base API to create nodes, attributes types.
-I think having infered types for attributes should be done here?
+Graphs are just basically containers for nodes, they keep track of how nodes are connected together and should implement how their nodes get evaluated.
 
 ### Nodes
 
@@ -25,6 +17,12 @@ There are two types of nodes:
 
 1. Built in nodes, which are compiled nodes written in rust, with Shelob's API
 2. Compound Nodes: These are actually Shelob graphs that contain other nodes. Evaluating a compound node actually evaluates its inner graph. It would be cool to be able to add a forward graph compound inside a push/pull graph and vice versa but that might be complex? To be discussed.
+
+I'd like to discuss if we need to have a difference between function nodes and data nodes. For example:
+
+- A Multiply node would be a function that takes two values and returns another one.
+- A Shape node would just store vertex data
+- A transform would sit kind of in the middle? or maybe just straight un be a function node that evaluates its local/world matrix
 
 ### Attributes
 
@@ -36,11 +34,42 @@ They can be:
 - get/set from within the compound with get/set nodes
 - Inferred (automatic type detection, can be limited to some types)
 
+---
+
+## Shelob Forward Evaluation Graph
+
+Dependencies: Shelob Core
+Crate Type: Library
+Description: Graphs that have an entry point. similar to Unreal's blueprint. These let you control the flow of execution explicitly.
+
+### Attributes
+
+* Exec attributes: This is how you explicitely control the flow of execution.
+
+### Nodes
+
+No specific node implemented there but most (all?) nodes should be automatically added two exec attributes, an input and output
+
+---
+
+## Shelob Push/Pull Graph
+
+Dependencies: Shelob Core
+Crate Type: Library
+Description: A graph that don't have one clear entry point.
+When changing a value, walk down the graph, tag any node that needs to be re-evaluated as "Dirty". That's the push part.
+Pick a node in the graph that we want to evaluate, then evaluate the dirty nodes that don't have dirty nodes connected in their inputs. repeat until all the dirty nodes are evaluated up until the node that was picked in the first place.
+Actual implementation might not be exactly that, TBD.
+
+---
+
 ## Shelob Array
 
 Dependencies: Shelob Core
 Crate Type: Library
 Description: Array Attributes and array manipulation. It might need to be a dependency for every crate that introduce a new attribute type.
+
+---
 
 ## Shelob Numeric
 
@@ -68,11 +97,15 @@ Description: Basic numerical operations
 * Lerp
 * more stuff
 
+---
+
 ## Shelob Trigonometry
 
 Dependencies: Shelob Core, Shelob Numeric
 Crate Type: Library
 Description: Everything trigonometry, probably a good place to introduce radians, degrees, etc.
+
+---
 
 ## Shelob String
 
@@ -85,6 +118,8 @@ Description: String manipulation
 ### Nodes
 
 - TBD
+
+---
 
 ## Shelob Logic
 
@@ -108,6 +143,8 @@ Crate Type: Library
 * Break (probably only useful in forward evaluation graphs): Exit out of a loop
 * Continue (probably only useful in forward evaluation graphs): Skips the rest of the evaluation and goes to the next iteration of the loop
 
+---
+
 ## Shelob Vector
 
 Dependencies: Shelob Core, Shelob Numeric
@@ -120,6 +157,8 @@ Crate Type: Library
 ### Nodes: 
 
 * Vector math stuff, TBD
+
+---
 
 ## Shelob Matrix
 
@@ -140,11 +179,15 @@ Nodes:
 * Multiply matrix
 * Inverse matrix
 
+---
+
 ## Shelob OS Nodes
 
 Dependencies: Shelob Core, Shelob Strings
 Crate Type: Library
 Description: Nodes to interact with the OS. manipulate files, spawn/kill processes etc.
+
+---
 
 ## Shelob 3D
 
@@ -189,3 +232,27 @@ Description: This is a big and definitely not exhaustive one.
 * Shape nodes:
 
   I don't have a ton of things to say right now but I'd like them to have a stack of modifiers, similar to blender with a twist: Modifiers can be either built-in rust modifiers or Shelob graphs that have access to the shape's data and can modify vertex position.
+
+---
+
+## Shelob 2D
+
+Dependencies: Shelob Core, Shelob Numeric, Shelob trigonometry
+Crate Type: Library
+Description: Audio manipulation stuff
+
+---
+
+## Shelob Audio
+
+Dependencies: Shelob Core
+Crate Type: Library
+Description: Audio manipulation stuff
+
+---
+
+## Shelob Animation
+
+Dependencies: Shelob Core, Shelob Numeric
+Crate Type: Library
+Description: Introduces a timeline, keyframes, etc.
